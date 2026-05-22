@@ -20,6 +20,11 @@ def home():
     }), 200
 
 
+@app.route('/projects', methods=["GET"])
+def get_projects():
+    return jsonify({"projects": PROJECTS, "count": len(PROJECTS)}), 200
+
+
 @app.route('/me', methods=["GET"])
 def me():
     return jsonify({
@@ -32,7 +37,7 @@ def me():
 
 @app.route('/projects/<int:p_id>', methods=["GET"])
 def get_projects(p_id):
-    if p_id> len(PROJECTS):
+    if p_id < 1 or p_id > len(PROJECTS):
         return jsonify({"message": "no projects found", "results": []}), 404
     return jsonify({"project": PROJECTS[p_id-1]}), 200
 
@@ -66,16 +71,16 @@ def get_joke():
             "joke": joke
         }), 200
     except requests.exceptions.ConnectionError:
-        return jsonify({"Error": "No Internet connectivity!!!"}), 503
+        return jsonify({"error": "No Internet connectivity!!!"}), 503
     except requests.exceptions.Timeout:
-        return jsonify({"Error": "Request timed out!!!"}), 504
+        return jsonify({"error": "Request timed out!!!"}), 504
     except requests.exceptions.HTTPError as e:
-        return jsonify({"Error": str(e)}), 400
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": "Unexpected error"}), 500
 
 
-app.route('/weather/<string:city>', methods=["GET"])
+@app.route('/weather/<string:city>', methods=["GET"])
 def get_weather(city):
     try:
         if not city:
@@ -83,7 +88,7 @@ def get_weather(city):
         api_key = os.getenv("WEATHER_API_KEY")
         if not api_key:
             return jsonify({"error": "Weather API key missing"}), 400
-        params = {"q": city, "appid": api_key, "units": "metrics"}
+        params = {"q": city, "appid": api_key, "units": "metric"}
         URL = "https://api.openweathermap.org/data/2.5/weather"
         weather = "No weather details"
         response = requests.get(URL, params=params, timeout=5)
@@ -96,24 +101,24 @@ def get_weather(city):
                 "temperature": data.get("main", {}).get("temp"),
                 "feels_like": data.get("main", {}).get("feels_like", "No info"),
                 "humidity": data.get("main", {}).get("humidity", "0"),
-                "visibiliity": data.get("visibilty", "0")
+                "visibiliity": data.get("visibility", "0")
             }
         return jsonify({
             "weather": weather
         }), 200
     except requests.exceptions.ConnectionError:
-        return jsonify({"Error": "No Internet connectivity!!!"}), 503
+        return jsonify({"error": "No Internet connectivity!!!"}), 503
     except requests.exceptions.Timeout:
-        return jsonify({"Error": "Request timed out!!!"}), 504
+        return jsonify({"error": "Request timed out!!!"}), 504
     except requests.exceptions.HTTPError as e:
-        return jsonify({"Error": str(e)}), 400
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": "Unexpected error"}), 500
 
 
 @app.route("/projects", methods=["POST"])
 def create_projects():
-    data = request.json()
+    data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
     name = data.get("name")
