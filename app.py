@@ -20,11 +20,6 @@ def home():
     }), 200
 
 
-@app.route('/projects', methods=["GET"])
-def get_projects():
-    return jsonify({"projects": PROJECTS, "count": len(PROJECTS)}), 200
-
-
 @app.route('/me', methods=["GET"])
 def me():
     return jsonify({
@@ -33,13 +28,6 @@ def me():
         "skills": ["Python", "VSCode"],
         "currently_learning": "Flask"
     }), 200
-
-
-@app.route('/projects/<int:p_id>', methods=["GET"])
-def get_projects(p_id):
-    if p_id < 1 or p_id > len(PROJECTS):
-        return jsonify({"message": "no projects found", "results": []}), 404
-    return jsonify({"project": PROJECTS[p_id-1]}), 200
 
 
 @app.route('/projects/search', methods=['GET'])
@@ -53,12 +41,25 @@ def search_projects():
     return jsonify({"results": results, "count": len(results)}), 200
 
 
+
+@app.route('/projects', methods=["GET"])
+def get_projects():
+    return jsonify({"projects": PROJECTS, "count": len(PROJECTS)}), 200
+
+
+@app.route('/projects/<int:p_id>', methods=["GET"])
+def get_projects_by_id(p_id):
+    if p_id < 1 or p_id > len(PROJECTS):
+        return jsonify({"message": "no projects found", "results": []}), 404
+    return jsonify({"project": PROJECTS[p_id-1]}), 200
+
+
 @app.route('/joke', methods=["GET"])
 def get_joke():
     try:
-        URL = "https://v2.jokeapi.dev/joke/programming"
+        url = "https://v2.jokeapi.dev/joke/programming"
         joke = "No Joke"
-        response = requests.get(URL, timeout=5)
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         data = response.json()
         if not data:
@@ -89,9 +90,9 @@ def get_weather(city):
         if not api_key:
             return jsonify({"error": "Weather API key missing"}), 400
         params = {"q": city, "appid": api_key, "units": "metric"}
-        URL = "https://api.openweathermap.org/data/2.5/weather"
+        url = "https://api.openweathermap.org/data/2.5/weather"
         weather = "No weather details"
-        response = requests.get(URL, params=params, timeout=5)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
         if data:
